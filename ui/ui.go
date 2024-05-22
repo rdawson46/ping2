@@ -1,10 +1,8 @@
 package ui
 
 import (
-    "os"
-    "net"
     "time"
-	//"math/rand"
+    "github.com/rdawson46/ping2/ping"
 	"github.com/guptarohit/asciigraph"
     tea "github.com/charmbracelet/bubbletea"
 )
@@ -39,7 +37,7 @@ func (m model) View() string {
         m.delays,
         asciigraph.Precision(2),
         asciigraph.SeriesColors(asciigraph.Green),
-        asciigraph.Width(len(m.delays) - 1),
+        asciigraph.Width(len(m.delays)),
         asciigraph.Height(30),
     )
     return graph
@@ -48,20 +46,12 @@ func (m model) View() string {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     switch msg := msg.(type) {
     case timerMsg:
-        s := time.Now()
-        _, err := net.Dial("tcp", "www.google.com:80")
-
-        if err != nil {os.Exit(1)}
-        end := time.Now()
-
-        total := end.Sub(s).Abs()
-
         //m.delays = append(m.delays, rand.Float64())
-        m.delays = append(m.delays, float64(total.Abs().Milliseconds()))
+        m.delays = append(m.delays, ping.Ping("www.google.com"))
         return m, waitForTimer(m.timer)
 
     case tea.KeyMsg:
-        switch msg.String(){
+        switch msg.String() {
         case "q", "ctrl+c":
             return m, tea.Quit
         }

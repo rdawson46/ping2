@@ -35,7 +35,7 @@ func InitializeModel() model {
 
     p.AddIPAddr(ra)
 
-    // TODO: not really required ============================
+    /* TODO: not really required ============================
     p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
         fmt.Printf("IP Addr: %s recieve, RTT: %v\n", addr.String(), rtt)
     }
@@ -43,7 +43,7 @@ func InitializeModel() model {
     p.OnIdle = func() {
         fmt.Printf("Finished")
     }
-    // ======================================================
+    */ //====================================================
 
     // TODO: need to adapt this into a bubble tea way friendly way
     /*

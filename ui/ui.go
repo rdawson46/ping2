@@ -8,6 +8,7 @@ import (
     "fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/guptarohit/asciigraph"
 	"github.com/rdawson46/ping2/ping"
 )
@@ -18,6 +19,8 @@ type model struct {
     delays []float64
     timer  chan timerMsg
     pinger *ping.Pinger
+    sum    float64
+    count  float64
 }
 
 func InitializeModel() model {
@@ -68,6 +71,8 @@ func InitializeModel() model {
         timer: make(chan timerMsg),
         delays: make([]float64, 0),
         pinger: p,
+        sum: 0,
+        count: 0,
     }
 }
 
@@ -83,14 +88,24 @@ func (m model) View() string {
         return "testing..."
     }
 
+    padding := lipgloss.NewStyle().
+        Padding(2)
+
+    title := lipgloss.NewStyle().
+        Bold(true).
+        Foreground(lipgloss.ANSIColor(23))
+
     graph := asciigraph.Plot(
         m.delays,
         asciigraph.Precision(2),
         asciigraph.SeriesColors(asciigraph.Green),
         asciigraph.Width(len(m.delays)),
-        asciigraph.Height(30),
+        asciigraph.Height(20),
     )
-    return graph
+
+    text := fmt.Sprintf("\n %s %f", title.Render("Average:"), (m.sum / m.count))
+
+    return padding.Render(graph + text)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
@@ -100,6 +115,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         //m.delays = append(m.delays, ping.Ping("www.google.com"))
         x := rand.Float64()
         m.delays = append(m.delays, x)
+        m.sum = m.sum + x
+        m.count = m.count + 1
         return m, waitForTimer(m.timer)
 
     case tea.KeyMsg:
@@ -115,7 +132,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
 func timer(sub chan<- timerMsg) tea.Cmd {
     return func() tea.Msg {
         for {
-            time.Sleep(time.Second * 3)
+            time.Sleep(time.Second)
             sub <- timerMsg{}
         }
     }
